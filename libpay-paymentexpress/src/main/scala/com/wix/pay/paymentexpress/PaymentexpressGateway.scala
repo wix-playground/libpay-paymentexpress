@@ -45,7 +45,7 @@ class PaymentexpressGateway(requestFactory: HttpRequestFactory,
     } match {
       case Success(transactionId) => Success(transactionId)
       case Failure(e: PaymentException) => Failure(e)
-      case Failure(e) => Failure(new PaymentErrorException(e.getMessage, e))
+      case Failure(e) => Failure(PaymentErrorException(e.getMessage, e))
     }
   }
 
@@ -64,7 +64,7 @@ class PaymentexpressGateway(requestFactory: HttpRequestFactory,
     } match {
       case Success(transactionId) => Success(transactionId)
       case Failure(e: PaymentException) => Failure(e)
-      case Failure(e) => Failure(new PaymentErrorException(e.getMessage, e))
+      case Failure(e) => Failure(PaymentErrorException(e.getMessage, e))
     }
   }
 
@@ -83,7 +83,7 @@ class PaymentexpressGateway(requestFactory: HttpRequestFactory,
     } match {
       case Success(transactionId) => Success(transactionId)
       case Failure(e: PaymentException) => Failure(e)
-      case Failure(e) => Failure(new PaymentErrorException(e.getMessage, e))
+      case Failure(e) => Failure(PaymentErrorException(e.getMessage, e))
     }
   }
 
@@ -120,7 +120,7 @@ class PaymentexpressGateway(requestFactory: HttpRequestFactory,
 
   private def verifyResponse(response: TransactionResponse) {
     if (response.Success != Booleans.`true`) {
-      throw new PaymentErrorException(response.ResponseText)
+      throw PaymentErrorException(response.ResponseText)
     }
 
     // In some rare cases, PaymentExpress may transmit a transaction request to a PaymentExpress Host, but a response
@@ -129,11 +129,11 @@ class PaymentexpressGateway(requestFactory: HttpRequestFactory,
     // be polled later. Until we know this is a real issue, we just treat this as an error.
     // @see https://www.paymentexpress.com/Technical_Resources/Legacy_Interfaces/PxXml#exceptionhandling
     if (response.Transaction.StatusRequired != Booleans.`false`) {
-      throw new PaymentErrorException("PaymentExpress transaction status is indeterminate")
+      throw PaymentErrorException("PaymentExpress transaction status is indeterminate")
     }
 
     if (response.Transaction.Authorized != Booleans.`true`) {
-      throw new PaymentRejectedException(s"${response.Transaction.CardHolderResponseText}|${response.Transaction.CardHolderResponseDescription}")
+      throw PaymentRejectedException(s"${response.Transaction.CardHolderResponseText}|${response.Transaction.CardHolderResponseDescription}")
     }
   }
 }

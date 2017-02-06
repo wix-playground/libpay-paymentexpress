@@ -3,7 +3,7 @@ package com.wix.pay.paymentexpress.it
 
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.wix.pay.creditcard.{CreditCard, CreditCardOptionalFields, YearMonth}
-import com.wix.pay.model.{CurrencyAmount, Deal}
+import com.wix.pay.model.{CurrencyAmount, Deal, Payment}
 import com.wix.pay.paymentexpress.PaymentexpressMatchers._
 import com.wix.pay.paymentexpress._
 import com.wix.pay.paymentexpress.model.ErrorCodes
@@ -47,6 +47,7 @@ class PaymentexpressGatewayIT extends SpecWithJUnit with PaymentexpressTester {
       val merchantKey = merchantParser.stringify(someMerchant)
 
       val someCurrencyAmount = CurrencyAmount("USD", 33.3)
+      val somePayment = Payment(someCurrencyAmount, 1)
       val someCreditCard = CreditCard(
         number = "4012888818888",
         expiration = YearMonth(2020, 12),
@@ -72,7 +73,7 @@ class PaymentexpressGatewayIT extends SpecWithJUnit with PaymentexpressTester {
       paymentexpress.authorize(
         merchantKey = merchantKey,
         creditCard = someCreditCard,
-        currencyAmount = someCurrencyAmount,
+        payment = somePayment,
         deal = Some(someDeal)
       ) must beAFailedTry.like {
         case e: PaymentErrorException => e.message must beEqualTo(errorMessage)
@@ -87,6 +88,7 @@ class PaymentexpressGatewayIT extends SpecWithJUnit with PaymentexpressTester {
       val someMerchantKey = merchantParser.stringify(someMerchant)
 
       val someCurrencyAmount = CurrencyAmount("USD", 33.3)
+      val somePayment = Payment(someCurrencyAmount, 1)
       val someCreditCard = CreditCard(
         number = "4012888818888",
         expiration = YearMonth(2020, 12),
@@ -113,7 +115,7 @@ class PaymentexpressGatewayIT extends SpecWithJUnit with PaymentexpressTester {
       paymentexpress.authorize(
         merchantKey = someMerchantKey,
         creditCard = someCreditCard,
-        currencyAmount = someCurrencyAmount,
+        payment = somePayment,
         deal = Some(someDeal)
       ) must beASuccessfulTry(
         check = beAuthorizationKey(
@@ -133,6 +135,7 @@ class PaymentexpressGatewayIT extends SpecWithJUnit with PaymentexpressTester {
       val merchantKey = merchantParser.stringify(someMerchant)
 
       val someCurrencyAmount = CurrencyAmount("USD", 33.3)
+      val somePayment = Payment(someCurrencyAmount, 1)
       val someCreditCard = CreditCard(
         number = "4012888818888",
         expiration = YearMonth(2020, 12),
@@ -162,7 +165,7 @@ class PaymentexpressGatewayIT extends SpecWithJUnit with PaymentexpressTester {
       paymentexpress.authorize(
         merchantKey = merchantKey,
         creditCard = someCreditCard,
-        currencyAmount = someCurrencyAmount,
+        payment = somePayment,
         deal = Some(someDeal)
       ) must beAFailedTry.like {
         case e: PaymentRejectedException => e.message must beEqualTo(expectedErrorMessage)

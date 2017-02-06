@@ -3,7 +3,7 @@ package com.wix.pay.paymentexpress
 
 import com.google.api.client.http._
 import com.wix.pay.creditcard.CreditCard
-import com.wix.pay.model.{CurrencyAmount, Customer, Deal}
+import com.wix.pay.model.{CurrencyAmount, Customer, Deal, Payment}
 import com.wix.pay.paymentexpress.model._
 import com.wix.pay.{PaymentErrorException, PaymentException, PaymentGateway, PaymentRejectedException}
 
@@ -27,19 +27,21 @@ class PaymentexpressGateway(requestFactory: HttpRequestFactory,
   private val transactionRequestParser = new TransactionRequestParser
   private val transactionResponseParser = new TransactionResponseParser
 
-  override def authorize(merchantKey: String, creditCard: CreditCard, currencyAmount: CurrencyAmount, customer: Option[Customer], deal: Option[Deal]): Try[String] = {
+  override def authorize(merchantKey: String, creditCard: CreditCard, payment: Payment, customer: Option[Customer], deal: Option[Deal]): Try[String] = {
     Try {
+      require(payment.installments == 1, "PaymentExpress does not support installments")
+
       val merchant = merchantParser.parse(merchantKey)
 
       val request = helper.createAuthorizeRequest(
         merchant = merchant,
-        currencyAmount = currencyAmount,
+        currencyAmount = payment.currencyAmount,
         creditCard = creditCard,
         deal = deal)
       val response = transact(request)
 
       authorizationParser.stringify(PaymentexpressAuthorization(
-        currency = currencyAmount.currency,
+        currency = payment.currencyAmount.currency,
         dpsTxnRef = response.Transaction.DpsTxnRef
       ))
     } match {
@@ -68,13 +70,14 @@ class PaymentexpressGateway(requestFactory: HttpRequestFactory,
     }
   }
 
-  override def sale(merchantKey: String, creditCard: CreditCard, currencyAmount: CurrencyAmount, customer: Option[Customer], deal: Option[Deal]): Try[String] = {
+  override def sale(merchantKey: String, creditCard: CreditCard, payment: Payment, customer: Option[Customer], deal: Option[Deal]): Try[String] = {
     Try {
+      require(payment.installments == 1, "PaymentExpress does not support installments")
       val merchant = merchantParser.parse(merchantKey)
 
       val request = helper.createSaleRequest(
         merchant = merchant,
-        currencyAmount = currencyAmount,
+        currencyAmount = payment.currencyAmount,
         creditCard = creditCard,
         deal = deal)
       val response = transact(request)

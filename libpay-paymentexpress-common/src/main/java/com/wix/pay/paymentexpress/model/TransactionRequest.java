@@ -10,7 +10,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "Txn")
 public class TransactionRequest {
     @XmlElement
-    public Double Amount;
+    public String Amount;
 
     @XmlElement
     public String CardHolderName;

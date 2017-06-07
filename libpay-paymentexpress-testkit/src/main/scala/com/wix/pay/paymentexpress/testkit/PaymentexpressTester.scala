@@ -3,7 +3,7 @@ package com.wix.pay.paymentexpress.testkit
 import com.wix.pay.paymentexpress.model.{Booleans, Transaction, TransactionResponse}
 
 trait PaymentexpressTester {
-  def anErrorResponse(code: String, message: String) = {
+  def anErrorResponse(code: String, message: String, help: String = "") = {
     val response = new TransactionResponse
     response.Transaction = new Transaction
 
@@ -16,6 +16,7 @@ trait PaymentexpressTester {
     response.Transaction.ReCo = code
 
     response.ResponseText = message
+    response.HelpText = help
     response.Transaction.responseText
 
     response

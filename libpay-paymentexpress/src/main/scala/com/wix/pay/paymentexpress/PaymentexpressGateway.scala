@@ -123,7 +123,10 @@ class PaymentexpressGateway(requestFactory: HttpRequestFactory,
 
   private def verifyResponse(response: TransactionResponse) {
     if (response.Success != Booleans.`true`) {
-      throw PaymentErrorException(response.ResponseText)
+      if (response.ResponseText == "DECLINED") {
+        throw PaymentRejectedException(s"${response.ResponseText}: ${response.HelpText}")
+      }
+      throw PaymentErrorException(s"${response.ReCo} ${response.ResponseText}: ${response.HelpText}")
     }
 
     // In some rare cases, PaymentExpress may transmit a transaction request to a PaymentExpress Host, but a response

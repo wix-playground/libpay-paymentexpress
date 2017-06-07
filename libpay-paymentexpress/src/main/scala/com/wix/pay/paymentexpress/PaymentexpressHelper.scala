@@ -1,6 +1,8 @@
 package com.wix.pay.paymentexpress
 
 
+import java.text.DecimalFormat
+
 import com.wix.pay.creditcard.CreditCard
 import com.wix.pay.model.{CurrencyAmount, Deal}
 import com.wix.pay.paymentexpress.model._
@@ -59,11 +61,12 @@ class PaymentexpressHelper {
     request.PostPassword = merchant.password
     request.TxnType = transactionType
     request.InputCurrency = currencyAmount.currency
-    request.Amount = currencyAmount.amount
+    request.Amount = new DecimalFormat("0.00").format(currencyAmount.amount)
+
 
     creditCard foreach (creditCard => {
       request.CardNumber = creditCard.number
-      request.DateExpiry = f"${creditCard.expiration.month}%02d${creditCard.expiration.year}%02d"
+      request.DateExpiry = f"${creditCard.expiration.month}%02d${creditCard.expiration.year - 2000}%02d"
 
       creditCard.holderName foreach (holderName => request.CardHolderName = holderName)
 

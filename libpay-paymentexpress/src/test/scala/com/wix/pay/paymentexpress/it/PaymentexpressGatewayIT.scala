@@ -60,6 +60,7 @@ class PaymentexpressGatewayIT extends SpecWithJUnit with PaymentexpressTester {
         description = Some("some deal description"))
 
       val errorMessage = "Authentication Error"
+      val helpMessage = "Provider right credentials"
       driver.aRequestFor(helper.createAuthorizeRequest(
         merchant = someMerchant,
         currencyAmount = someCurrencyAmount,
@@ -67,7 +68,8 @@ class PaymentexpressGatewayIT extends SpecWithJUnit with PaymentexpressTester {
         deal = Some(someDeal))
       ) returns anErrorResponse(
         code = ErrorCodes.authenticationError,
-        message = errorMessage
+        message = errorMessage,
+        help = helpMessage
       )
 
       paymentexpress.authorize(
@@ -76,7 +78,7 @@ class PaymentexpressGatewayIT extends SpecWithJUnit with PaymentexpressTester {
         payment = somePayment,
         deal = Some(someDeal)
       ) must beAFailedTry.like {
-        case e: PaymentErrorException => e.message must beEqualTo(errorMessage)
+        case e: PaymentErrorException => e.message must beEqualTo(s"${ErrorCodes.authenticationError} $errorMessage: $helpMessage")
       }
     }
 

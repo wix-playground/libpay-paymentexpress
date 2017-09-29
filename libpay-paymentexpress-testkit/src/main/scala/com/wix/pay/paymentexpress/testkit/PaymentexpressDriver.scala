@@ -5,8 +5,9 @@ import com.wix.pay.paymentexpress.model.{TransactionRequest, TransactionResponse
 import com.wix.pay.paymentexpress.{TransactionRequestParser, TransactionResponseParser}
 import spray.http._
 
-class PaymentexpressDriver(port: Int) {
-  private val probe = new EmbeddedHttpProbe(port, EmbeddedHttpProbe.NotFoundHandler)
+class PaymentexpressDriver(probe: EmbeddedHttpProbe) {
+  def this(port: Int) = this(new EmbeddedHttpProbe(port, EmbeddedHttpProbe.NotFoundHandler))
+
   private val transactionRequestParser = new TransactionRequestParser
   private val transactionResponseParser = new TransactionResponseParser
 
@@ -23,10 +24,14 @@ class PaymentexpressDriver(port: Int) {
   }
 
   def aRequestFor(request: TransactionRequest): RequestCtx = {
-    new RequestCtx(request)
+    new RequestCtx(Some(request))
   }
 
-  class RequestCtx(request: TransactionRequest) {
+  def anyRequest(): RequestCtx = {
+    new RequestCtx(None)
+  }
+
+  class RequestCtx(request: Option[TransactionRequest]) {
     def returns(response: TransactionResponse) {
       probe.handlers += {
         case HttpRequest(
@@ -42,8 +47,8 @@ class PaymentexpressDriver(port: Int) {
     }
 
     private def isStubbedRequestEntity(entity: HttpEntity): Boolean = {
-      val parsedRequest = transactionRequestParser.parse(entity.asString)
-      request == parsedRequest
+      lazy val parsedRequest = transactionRequestParser.parse(entity.asString)
+      request.forall(_ == parsedRequest)
     }
   }
 }

@@ -3,7 +3,7 @@ package com.wix.pay.paymentexpress
 
 import com.google.api.client.http._
 import com.wix.pay.creditcard.CreditCard
-import com.wix.pay.model.{CurrencyAmount, Customer, Deal, Payment}
+import com.wix.pay.model._
 import com.wix.pay.paymentexpress.model._
 import com.wix.pay.{PaymentErrorException, PaymentException, PaymentGateway, PaymentRejectedException}
 
@@ -123,10 +123,17 @@ class PaymentexpressGateway(requestFactory: HttpRequestFactory,
 
   private def verifyResponse(response: TransactionResponse) {
     if (response.Success != Booleans.`true`) {
-      if (response.ResponseText == "DECLINED") {
-        throw PaymentRejectedException(s"${response.ResponseText}: ${response.HelpText}")
+      if (PaymentexpressGateway.errorResponseCodes.contains(response.ReCo)) {
+        throw PaymentErrorException(
+          message = s"${response.ResponseText}: ${response.HelpText}",
+          gatewayInternalCode = Option(response.ReCo),
+          cause = null)
+      } else {
+        throw PaymentRejectedException(
+          message = s"${response.ResponseText}: ${response.HelpText}",
+          gatewayInternalCode = Option(response.ReCo),
+          cause = null)
       }
-      throw PaymentErrorException(s"${response.ReCo} ${response.ResponseText}: ${response.HelpText}")
     }
 
     // In some rare cases, PaymentExpress may transmit a transaction request to a PaymentExpress Host, but a response
@@ -142,4 +149,13 @@ class PaymentexpressGateway(requestFactory: HttpRequestFactory,
       throw PaymentRejectedException(s"${response.Transaction.CardHolderResponseText}|${response.Transaction.CardHolderResponseDescription}")
     }
   }
+}
+
+private object PaymentexpressGateway {
+  val errorResponseCodes = Set(
+    ErrorCodes.noSuchUser, ErrorCodes.blankPassword, ErrorCodes.invalidPassword, ErrorCodes.authenticationError,
+    ErrorCodes.invalidAmount, ErrorCodes.invalidCardNumber, ErrorCodes.invalidAccount, ErrorCodes.invalidExpiry,
+    ErrorCodes.accountError, ErrorCodes.bankTimeout, ErrorCodes.transmissionError, ErrorCodes.ivlReqType,
+    ErrorCodes.invalidClientType, ErrorCodes.timeout
+  )
 }

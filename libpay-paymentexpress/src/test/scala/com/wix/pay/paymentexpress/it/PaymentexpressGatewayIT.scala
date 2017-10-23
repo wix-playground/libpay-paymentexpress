@@ -78,7 +78,9 @@ class PaymentexpressGatewayIT extends SpecWithJUnit with PaymentexpressTester {
         payment = somePayment,
         deal = Some(someDeal)
       ) must beAFailedTry.like {
-        case e: PaymentErrorException => e.message must beEqualTo(s"${ErrorCodes.authenticationError} $errorMessage: $helpMessage")
+        case e: PaymentErrorException =>
+          (e.message must beEqualTo(s"$errorMessage: $helpMessage")) and
+            (e.gatewayInternalCode must beEqualTo(Some(ErrorCodes.authenticationError)))
       }
     }
 

@@ -1,5 +1,9 @@
 package com.wix.pay.paymentexpress.model
 
+/**
+  * @see <a href="https://www.paymentexpress.com/developer-integrated-eftpos-responsecodes">PxPost Integration Guide</a>
+  * @see <a href="http://www.paymentexpress.com/Document/PxPost_Integration_Guide.pdf"></a>
+  */
 object ErrorCodes {
   /** No such user for PXPost. Please contact Payment Express to confirm your account information. */
   val noSuchUser = "D2"
